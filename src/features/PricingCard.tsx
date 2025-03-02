@@ -23,9 +23,10 @@ function PricingCard({ cryptoList, variant = "light" }: PricingCardProps) {
         {cryptoList.length > 0 ? (
           cryptoList.map((crypto) => (
             <li key={crypto.id} className="flex justify-between">
-              <span>
+              <div className="flex items-center gap-1.5">
+                <img src={crypto.image} width={15} height={15} alt="" />
                 {crypto.name} ({crypto.symbol})
-              </span>
+              </div>
               <span className="font-semibold">${crypto.price.toFixed(2)}</span>
             </li>
           ))

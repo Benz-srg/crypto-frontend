@@ -1,5 +1,5 @@
 import { useEffect, useState, ComponentType } from "react";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { Crypto } from "@/types/crypto";
 
 const SOCKET_URL =
@@ -14,13 +14,24 @@ export function withCryptoSocket<T extends WithCryptoSocketProps>(
 ) {
   return function ComponentWithCryptoSocket(props: Omit<T, "cryptoList">) {
     const [cryptoList, setCryptoList] = useState<Crypto[]>([]);
+    const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
       console.log("📡 Connecting to WebSocket...");
 
-      const socket = io(SOCKET_URL);
+      const newSocket = io(SOCKET_URL, {
+        reconnection: true,
+        reconnectionAttempts: Infinity,
+        reconnectionDelay: 3000,
+      });
 
-      socket.on("cryptoList", (data: Crypto[]) => {
+      setSocket(newSocket);
+
+      newSocket.on("connect", () => {
+        console.log("✅ WebSocket Connected:", newSocket.id);
+      });
+
+      newSocket.on("cryptoList", (data: Crypto[]) => {
         console.log("🔥 Received initial crypto list from WebSocket:", data);
         setCryptoList(
           data.map((crypto) => ({
@@ -30,7 +41,7 @@ export function withCryptoSocket<T extends WithCryptoSocketProps>(
         );
       });
 
-      socket.on("coinUpdate", (updatedCoin: Crypto) => {
+      newSocket.on("coinUpdate", (updatedCoin: Crypto) => {
         console.log("🔄 Received coin update:", updatedCoin);
         setCryptoList((prevList) =>
           prevList.map((coin) =>
@@ -41,9 +52,21 @@ export function withCryptoSocket<T extends WithCryptoSocketProps>(
         );
       });
 
+      newSocket.on("disconnect", (reason) => {
+        console.warn("❌ WebSocket Disconnected:", reason);
+      });
+
+      newSocket.on("reconnect_attempt", (attempt) => {
+        console.log(`🔄 Reconnecting... Attempt #${attempt}`);
+      });
+
+      newSocket.on("reconnect", () => {
+        console.log("✅ Reconnected to WebSocket!");
+      });
+
       return () => {
         console.log("❌ Disconnecting from WebSocket...");
-        socket.disconnect();
+        newSocket.disconnect();
       };
     }, []);
 

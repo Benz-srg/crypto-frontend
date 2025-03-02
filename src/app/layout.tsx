@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className="bg-gray-100">
-        <nav className="bg-blue-600 text-white p-4 flex justify-between">
+        <nav className="bg-blue-600 text-white p-4 flex items-center justify-between">
           <Link href="/" className="font-bold">
             Crypto Tracker
           </Link>
