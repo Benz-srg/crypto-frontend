@@ -4,7 +4,7 @@ import PricingCard from "@/features/PricingCard";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="h-[calc(100%_-_56px)]  p-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-900">
           Live Cryptocurrency Prices

@@ -1,23 +1,21 @@
 import { useEffect, useState, ComponentType } from "react";
 import { io, Socket } from "socket.io-client";
+import { useAtom } from "jotai";
+import { cryptoListAtom } from "@/store/cryptoStore";
 import { Crypto } from "@/types/crypto";
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000";
 
-interface WithCryptoSocketProps {
-  cryptoList: Crypto[];
-}
-
-export function withCryptoSocket<T extends WithCryptoSocketProps>(
+export function withCryptoSocket<T extends object>(
   WrappedComponent: ComponentType<T>
 ) {
-  return function ComponentWithCryptoSocket(props: Omit<T, "cryptoList">) {
-    const [cryptoList, setCryptoList] = useState<Crypto[]>([]);
+  return function ComponentWithCryptoSocket(props: T) {
+    const [, setCryptoList] = useAtom(cryptoListAtom);
     const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
-      console.log("📡 Connecting to WebSocket...");
+      console.log("📡 Attempting to connect to WebSocket at:", SOCKET_URL);
 
       const newSocket = io(SOCKET_URL, {
         reconnection: true,
@@ -29,6 +27,10 @@ export function withCryptoSocket<T extends WithCryptoSocketProps>(
 
       newSocket.on("connect", () => {
         console.log("✅ WebSocket Connected:", newSocket.id);
+      });
+
+      newSocket.on("connect_error", (error) => {
+        console.error("❌ Connection error:", error);
       });
 
       newSocket.on("cryptoList", (data: Crypto[]) => {
@@ -43,13 +45,31 @@ export function withCryptoSocket<T extends WithCryptoSocketProps>(
 
       newSocket.on("coinUpdate", (updatedCoin: Crypto) => {
         console.log("🔄 Received coin update:", updatedCoin);
-        setCryptoList((prevList) =>
-          prevList.map((coin) =>
-            coin.id === updatedCoin.id
-              ? { ...coin, price: updatedCoin.price ?? 0 }
-              : coin
-          )
-        );
+
+        setCryptoList((prevList) => {
+          const exists = prevList.some((coin) => coin.id === updatedCoin.id);
+          if (exists) {
+            return prevList.map((coin) =>
+              coin.id === updatedCoin.id
+                ? {
+                    ...coin,
+                    name: updatedCoin.name || coin.name,
+                    symbol: updatedCoin.symbol || coin.symbol,
+                    price: updatedCoin.price ?? 0,
+                    updatedAt: updatedCoin.updatedAt || coin.updatedAt,
+                  }
+                : coin
+            );
+          } else {
+            console.log("➕ Adding new cryptocurrency:", updatedCoin);
+            return [...prevList, updatedCoin];
+          }
+        });
+      });
+
+      newSocket.on("fetchCryptoList", () => {
+        console.log("🔄 Fetching crypto list again...");
+        newSocket.emit("getCryptoList");
       });
 
       newSocket.on("disconnect", (reason) => {
@@ -70,6 +90,6 @@ export function withCryptoSocket<T extends WithCryptoSocketProps>(
       };
     }, []);
 
-    return <WrappedComponent {...(props as T)} cryptoList={cryptoList} />;
+    return <WrappedComponent {...props} />;
   };
 }

@@ -1,36 +1,179 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# **📌 Project: Crypto Dashboard Frontend**
 
-## Getting Started
+This is a **real-time cryptocurrency dashboard** built with **Next.js 15**, **Tailwind CSS 4**, and **WebSockets** for real-time price updates. The application allows users to view, add, update, and delete cryptocurrency data while receiving live market price updates from Binance.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## **🚀 Features**
+
+✅ **Next.js 15** – Modern React-based framework for fast and scalable frontend development\
+✅ **Tailwind CSS 4** – Utility-first CSS framework for a sleek and responsive UI\
+✅ **WebSocket Integration** – Real-time price updates via **NestJS WebSocket**\
+✅ **Jotai for State Management** – Efficient and minimal global state management\
+✅ **CRUD Operations** – Add, Edit, Delete cryptocurrencies dynamically\
+✅ **Server-Side Price Updates** – Automatic price updates using **Binance API**\
+✅ **Docker Support** – Easily deployable with Docker and Docker Compose
+
+---
+
+## **📂 Tech Stack**
+
+- **Frontend:** Next.js 15, React, Tailwind CSS 4, TypeScript, Jotai
+- **Backend:** NestJS, Sequelize (PostgreSQL), WebSockets, Binance API
+- **Database:** PostgreSQL
+- **Deployment:** Docker, Docker Compose
+
+---
+
+## **📦 Installation & Setup**
+
+Follow these steps to run the **frontend** and **backend** together.
+
+### **1️⃣ Clone the Repository**
+
+```sh
+git clone https://github.com/Benz-srg/crypto-frontend.git
+cd crypto-frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### **2️⃣ Backend Setup (NestJS)**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> The backend provides WebSocket connections and real-time crypto price updates.
 
-## Learn More
+#### **Run Backend with Docker**
 
-To learn more about Next.js, take a look at the following resources:
+1. Navigate to the backend folder:
+   ```sh
+   cd crypto-testing
+   ```
+2. Build and start the backend service:
+   ```sh
+   docker compose up --build
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### **Environment Variables (**``**) for Backend**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Create a `.env` file in the backend directory:
 
-## Deploy on Vercel
+```env
+DB_HOST=crypto_db
+DB_PORT=5432
+DB_USER=crypto_testing
+DB_PASSWORD=crypto_testing_password
+DB_NAME=crypto_testing
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### **3️⃣ Frontend Setup (Next.js)**
+
+> The frontend interacts with the backend WebSocket service to display live crypto prices.
+
+#### **Run Frontend with Docker**
+
+1. Navigate to the frontend folder:
+   ```sh
+   cd frontend
+   ```
+2. Build and start the frontend service:
+   ```sh
+   docker build -t crypto-frontend .
+   docker run -p 8080:8080 --name crypto-frontend crypto-frontend
+   ```
+
+#### **Environment Variables (**``**) for Frontend**
+
+Create a `.env.example` file in the frontend directory:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_SOCKET_URL=ws://localhost:3000
+```
+
+---
+
+### **4️⃣ Run Both Frontend & Backend with Docker Compose**
+
+You can simplify the process by running both **frontend** and **backend** together using **Docker Compose**.
+
+1. Navigate to the project root:
+   ```sh
+   cd crypto-frontend
+   ```
+2. Run the services:
+   ```sh
+   docker-compose up --build
+   ```
+
+> **Your frontend will be available at:** `http://localhost:8080`\
+> **Your backend will run at:** `http://localhost:3000`
+
+---
+
+## **🖥️ How to Use**
+
+1. **View Real-Time Prices:** The dashboard will display a list of cryptocurrencies with live price updates.
+2. **Add Cryptocurrency:** Click the **"+ Add Crypto"** button and enter the details.
+3. **Edit Cryptocurrency:** Click the **"✏️ Edit"** button next to any coin to modify its details.
+4. **Delete Cryptocurrency:** Click the **"🗑️ Delete"** button to remove a cryptocurrency.
+5. **WebSocket Updates:** Prices update in real-time without page reloads.
+
+---
+
+## **📡 WebSocket Events**
+
+| Event Name   | Payload Type | Description                           |
+| ------------ | ------------ | ------------------------------------- |
+| `cryptoList` | `Crypto[]`   | Initial list of cryptocurrencies      |
+| `coinUpdate` | `Crypto`     | Live update when a coin price changes |
+
+---
+
+## **📜 API Endpoints**
+
+| Method     | Endpoint                | Description              |
+| ---------- | ----------------------- | ------------------------ |
+| **GET**    | `/cryptocurrencies`     | Get all cryptocurrencies |
+| **POST**   | `/cryptocurrencies`     | Add a new cryptocurrency |
+| **PUT**    | `/cryptocurrencies/:id` | Update cryptocurrency    |
+| **DELETE** | `/cryptocurrencies/:id` | Delete cryptocurrency    |
+
+---
+
+## **🔧 Troubleshooting**
+
+### **WebSocket Not Connecting?**
+
+- Ensure the **backend** is running before the **frontend**.
+- Check `.env.example` for the correct WebSocket URL:
+  ```
+  NEXT_PUBLIC_SOCKET_URL=ws://localhost:3000
+  ```
+
+### **Database Not Updating?**
+
+- Check the logs:
+  ```sh
+  docker compose logs crypto-testing
+  ```
+- Run migrations manually:
+  ```sh
+  docker compose exec -it crypto-testing yarn migrate
+  ```
+
+---
+
+## **📜 License**
+
+This project is **MIT Licensed**. Feel free to use and modify it.
+
+---
+
+## **📬 Contact**
+
+If you have any issues or feature requests, feel free to **open an issue** or reach out:
+
+🔗 **GitHub:** [Benz-srg](https://github.com/Benz-srg)\
+📧 **Email:** [ekkasit.srg@gmail.com](mailto:ekkasit.srg@gmail.com)
